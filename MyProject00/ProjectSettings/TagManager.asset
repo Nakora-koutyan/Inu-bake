@@ -9,6 +9,9 @@ TagManager:
   - Branch
   - Leaf
   - Tree
+  - Ladder
+  - Platform
+  - Apple
   layers:
   - Default
   - TransparentFX
