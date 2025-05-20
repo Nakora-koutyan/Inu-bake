@@ -105,7 +105,7 @@ public class Player : MonoBehaviour
     }
 
     //特定のオブジェクトと接触している間発生する処理
-    private void OnCollisionStay2D(Collision2D collision)
+    private void OnTriggerStay2D(Collider2D collision)
     {
         //Object[Tree]の[Branch]の部分と接触している場合
         if(collision.gameObject.CompareTag("Branch"))
@@ -153,7 +153,7 @@ public class Player : MonoBehaviour
             throw new ArgumentNullException(nameof(apple));
         }
 
-
+        apple.GetComponent<Apple>().PlayerHit();
     }
 
     public void HitBranchOfTree(GameObject tree)
@@ -164,42 +164,16 @@ public class Player : MonoBehaviour
             throw new ArgumentNullException(nameof(tree));
         }
 
-        const float half = 5.5f;
-        //衝突したオブジェクトと自身の大きさを変数に格納
-        Vector2 player_half_scale = transform.lossyScale * half;
-        Vector2 tree_half_scale = tree.transform.lossyScale * half;
+        //念のためLog.messageを出力
+        Debug.Log("Hit Branch");
 
-        const float collision_offset = 0.5f;
-        float player_left = (transform.position.x - player_half_scale.x) - collision_offset;
-        float player_right = (transform.position.x + player_half_scale.x) + collision_offset;
-        float player_top = (transform.position.y + player_half_scale.y) + collision_offset;
-        float player_bottom = (transform.position.y - player_half_scale.y) - collision_offset;
-
-        float tree_left = (tree.transform.position.x - tree_half_scale.x) - collision_offset;
-        float tree_right = (tree.transform.position.x + tree_half_scale.x) + collision_offset;
-        float tree_top = (tree.transform.position.y + tree_half_scale.y) + collision_offset;
-        float tree_bottom = (tree.transform.position.y - tree_half_scale.y) - collision_offset;
-
-        bool player_hit_from_right = player_right > tree_left;
-        bool player_hit_from_left = player_left < tree_right;
-
-        if (player_hit_from_right ||
-            player_hit_from_left)
+        if (is_player_shake_tree)
         {
-            //念のためLog.messageを出力
-            Debug.Log("Hit Branch");
+            tree.GetComponent<BranchHit>().HandleTreeShaken(true);
 
-            if (is_player_shake_tree)
-            {
-                tree.GetComponent<BranchHit>().HandleTreeShaken(true);
+            StartCoroutine(WaitForSpecifiedTime(2.0f));
+        }
 
-                StartCoroutine(WaitForSpecifiedTime(2.0f));
-            }
-        }
-        else
-        {
-            Debug.Log("Failed");
-        }
     }
 
     //数秒間後にbool型引数にfalseを返す処理

@@ -29,7 +29,7 @@ public class Tree : MonoBehaviour
         if (is_shaken)
         {
             //揺れる処理を実行
-            TreeSway();
+            OnTreeShaken();
 
             //数秒後に揺れる処理が停止するように
             StartCoroutine(WaitForSpecifiedTime(2.0f));
@@ -37,7 +37,7 @@ public class Tree : MonoBehaviour
     }
 
     //木が揺れる処理
-    private void TreeSway()
+    private void OnTreeShaken()
     {
         //1freamにつき動かしたい値
         const float t = 8.0f;
