@@ -5,6 +5,8 @@ public class Tree : MonoBehaviour
 {
     [SerializeField, Header("SwayAmount")]          //Allows you to change the value of variables in Unity
     protected float _sway_amount;
+    [SerializeField, Header("LeafObject")]        //Allows you to change the value of variables in Unity
+    private GameObject _leaf;
 
     private Vector2 init_pos;                       //初期座標
     protected static bool is_shaken;                //揺らされた？
@@ -18,6 +20,10 @@ public class Tree : MonoBehaviour
             //初期座標
             init_pos = init_transform.position;
         }
+        if(_leaf == null)
+        {
+            Debug.LogError("not Apple", this);
+        }
 
         is_shaken = false;
     }
@@ -30,6 +36,9 @@ public class Tree : MonoBehaviour
         {
             //揺れる処理を実行
             OnTreeShaken();
+
+            //Apple Spawn Emitter
+            _leaf.GetComponent<LeafHit>().SpawnApple();
 
             //数秒後に揺れる処理が停止するように
             StartCoroutine(WaitForSpecifiedTime(2.0f));
@@ -55,6 +64,8 @@ public class Tree : MonoBehaviour
         //boolをfalseに変更
         is_shaken = false;
 
+        _leaf.GetComponent<LeafHit>().SetBooleanSpawnApple(false);
+        
         this.transform.position = new Vector2(init_pos.x, init_pos.y);
     }
 }

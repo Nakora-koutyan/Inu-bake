@@ -31,6 +31,7 @@ public class Player : MonoBehaviour
         is_jump = false;
 
         _max_speed = _move_speed * 2.0f;
+        is_player_shake_tree = false;
     }
 
     // Update is called once per frame
@@ -154,6 +155,7 @@ public class Player : MonoBehaviour
         }
 
         apple.GetComponent<Apple>().PlayerHit();
+        Destroy(apple);
     }
 
     public void HitBranchOfTree(GameObject tree)
