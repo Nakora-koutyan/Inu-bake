@@ -3,22 +3,20 @@ using UnityEngine;
 
 public class Tree : MonoBehaviour
 {
-    [SerializeField, Header("SwayAmount")]        //Allows you to change the value of variables in Unity
+    [SerializeField, Header("SwayAmount")]          //Allows you to change the value of variables in Unity
     protected float _sway_amount;
 
-    private Vector2 init_pos;               //初期座標
-    protected static bool is_shaken;                 //揺らされた？
+    private Vector2 init_pos;                       //初期座標
+    protected static bool is_shaken;                //揺らされた？
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         //このオブジェクトの座標や大きさに関する情報を取得
-        Transform init_transform = GetComponent<Transform>();
-        if (init_transform != null)
+        if (TryGetComponent<Transform>(out var init_transform))
         {
             //初期座標
             init_pos = init_transform.position;
-            Debug.Log("Init Start Pos" + init_pos);
         }
 
         is_shaken = false;
@@ -27,9 +25,6 @@ public class Tree : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //揺らされたか？を確認するためのLogText
-        Debug.Log("result" +  is_shaken);
-
         //揺らされた場合
         if (is_shaken)
         {
@@ -61,7 +56,5 @@ public class Tree : MonoBehaviour
         is_shaken = false;
 
         this.transform.position = new Vector2(init_pos.x, init_pos.y);
-
-        //Debug.Log("End Coroutine");
     }
 }
