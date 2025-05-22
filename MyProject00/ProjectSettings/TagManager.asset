@@ -12,6 +12,7 @@ TagManager:
   - Ladder
   - Platform
   - Apple
+  - Bird
   layers:
   - Default
   - TransparentFX
