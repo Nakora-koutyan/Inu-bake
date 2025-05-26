@@ -448,6 +448,7 @@
 -analyzer:"C:/Program Files/Unity/Hub/Editor/6000.1.0f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.UIToolkit.SourceGenerator.dll"
 "Assets/Scprits/Object/Apple/Apple.cs"
 "Assets/Scprits/Object/Bird/Bird.cs"
+"Assets/Scprits/Object/Bird/SearchPlayer.cs"
 "Assets/Scprits/Object/Enemy/Enemy.cs"
 "Assets/Scprits/Object/Player/Player.cs"
 "Assets/Scprits/Object/Tree/Branch.cs"
