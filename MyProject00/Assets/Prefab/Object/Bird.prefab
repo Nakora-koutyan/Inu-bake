@@ -103,6 +103,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a467f591e4708ce45b310a80fc8f08c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _amplitude: 5
+  _ampli_speed: 1
+  _sensor: {fileID: 8751608436411949469}
 --- !u!50 &8897665017085704489
 Rigidbody2D:
   serializedVersion: 5
@@ -222,7 +225,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c38ed40a4d5eda54c969d1ea9d4ab25a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _player: {fileID: 8585497712804742924, guid: 07f88927d4a83794ebc1334bb74ab48f, type: 3}
 --- !u!50 &5147276272116862339
 Rigidbody2D:
   serializedVersion: 5
@@ -280,9 +282,9 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 6.5

@@ -1,12 +1,13 @@
 <linker>
 	<assembly fullname="Assembly-CSharp">
 		<type fullname="Apple" preserve="nothing"/>
+		<type fullname="Bird" preserve="nothing"/>
 		<type fullname="BranchHit" preserve="nothing"/>
-		<type fullname="Enemy" preserve="nothing"/>
 		<type fullname="LeafHit" preserve="nothing"/>
 		<type fullname="Player" preserve="nothing"/>
 		<type fullname="PlayerHP" preserve="nothing"/>
 		<type fullname="ReadmeBE2" preserve="nothing"/>
+		<type fullname="SearchPlayer" preserve="nothing"/>
 		<type fullname="Tree" preserve="nothing"/>
 	</assembly>
 	<assembly fullname="Unity.2D.Animation.Runtime">

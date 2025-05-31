@@ -11,6 +11,13 @@
         {
             "managedAssemblyName": "Assembly-CSharp.dll",
             "nativeClass": "",
+            "fullManagedTypeName": "Bird",
+            "moduleName": "",
+            "usedInScenes": []
+        },
+        {
+            "managedAssemblyName": "Assembly-CSharp.dll",
+            "nativeClass": "",
             "fullManagedTypeName": "BranchHit",
             "moduleName": "",
             "usedInScenes": []
@@ -37,13 +44,6 @@
             "usedInScenes": [
                 "Assets/Scenes/SampleScene.unity"
             ]
-        },
-        {
-            "managedAssemblyName": "Assembly-CSharp.dll",
-            "nativeClass": "",
-            "fullManagedTypeName": "Enemy",
-            "moduleName": "",
-            "usedInScenes": []
         },
         {
             "managedAssemblyName": "",
@@ -149,6 +149,13 @@
             "nativeClass": "RuntimeInitializeOnLoadManager",
             "fullManagedTypeName": "",
             "moduleName": "Core",
+            "usedInScenes": []
+        },
+        {
+            "managedAssemblyName": "Assembly-CSharp.dll",
+            "nativeClass": "",
+            "fullManagedTypeName": "SearchPlayer",
+            "moduleName": "",
             "usedInScenes": []
         },
         {
