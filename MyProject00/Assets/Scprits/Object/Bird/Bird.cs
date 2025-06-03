@@ -15,9 +15,13 @@ public class Bird : MonoBehaviour
     private float _attack_duration;           // 攻撃（半円移動）にかかる時間
 
     private Vector2 basis_pos;                //初期座標
+    private Vector2 attack_start_pos;         //攻撃開始時の座標
     private Vector2 velocity;                 //加速度
 
     private float _time;                       //時間を計測
+
+    private Vector2 _distance_player;
+    private float _censor_radius;
 
     //BirdEnemyのステータス
     private enum _BirdStatus
@@ -60,17 +64,22 @@ public class Bird : MonoBehaviour
             //待機、パトロール処理
             case _BirdStatus.Idle:
                 Patrol();
+                this.transform.position = basis_pos + velocity;
                 break;
             //攻撃準備処理
             case _BirdStatus.AttackPreparation:
                 AttackStandBy();
+                this.transform.position = attack_start_pos + velocity;
                 break;
             //攻撃中処理
             case _BirdStatus.Attacking:
                 BirdAttacking();
+                this.transform.position = attack_start_pos + velocity;
                 break;
             //攻撃後処理
             case _BirdStatus.AttackRecovery:
+                // 回復中は、攻撃終了時の位置からbasis_posに戻る
+                this.transform.position = basis_pos + velocity;
                 break;
             //ダメージを受けた際の処理
             case _BirdStatus.Damage:
@@ -81,6 +90,10 @@ public class Bird : MonoBehaviour
         }
 
         this.transform.position = basis_pos + velocity;
+        Debug.Log("basis_pos " + basis_pos);
+        Debug.Log("bird_location " + this.transform.position);
+        Debug.Log("bird_vec " + velocity);
+        Debug.Log("attack_start_pos " + attack_start_pos);
     }
 
     private void Patrol()
@@ -94,10 +107,13 @@ public class Bird : MonoBehaviour
         //センサーの範囲内にプレイヤーが存在する場合
         if (_sensor.GetComponent<SearchPlayer>().FindPlayer().is_find_player)
         {
-            //行動の基準とする座標を更新
-            basis_pos = new(this.transform.position.x + velocity.x, this.transform.position.y + velocity.y);
+            //攻撃時の座標を取得
+            attack_start_pos = this.transform.position;
+
             //status change [Patrol] -> [AttackPrepration]
             _bird_status = _BirdStatus.AttackPreparation;
+            _distance_player = _sensor.GetComponent<SearchPlayer>().FindPlayer().distance;
+            _censor_radius = _sensor.GetComponent<SearchPlayer>().FindPlayer().collider_radius;
         }
     }
     private void AttackStandBy()
@@ -107,13 +123,6 @@ public class Bird : MonoBehaviour
         //この動作に入ってからの時間を取得
         _time += Time.deltaTime;
 
-        //float attack_angle = Mathf.Repeat(_time * 180.0f, 180.0f) + 180.0f;
-        //float change_radian = Mathf.Deg2Rad * attack_angle;
-
-        //float attack_root_y = (Mathf.Sin(change_radian) * _amplitude);
-
-        //velocity.y = attack_root_y;
-        
         //定数宣言
         const float attack_wait_time = 0.5f;
         const float time_reset = 0.0f;
@@ -140,10 +149,13 @@ public class Bird : MonoBehaviour
         float normalize_time = (_time / _attack_duration);
 
         //時間経過と共に角度を180～360の間で滑らかに変化させる
-        float angle_degrees = Mathf.Lerp((max_angle), (max_angle * one_half), normalize_time);
+        float angle_degrees = Mathf.Lerp((max_angle), (max_angle * one_half),normalize_time);
 
         //ラジアン値に変換
         float angle_change_radian = angle_degrees * Mathf.Deg2Rad;
+
+        velocity.x = Mathf.Cos(angle_change_radian) * _distance_player.x;
+        velocity.y = Mathf.Sin(angle_change_radian) * _censor_radius;
 
         // 攻撃終了判定
         if (_time >= _attack_duration)

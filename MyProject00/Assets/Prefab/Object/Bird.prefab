@@ -106,6 +106,7 @@ MonoBehaviour:
   _amplitude: 5
   _ampli_speed: 1
   _sensor: {fileID: 8751608436411949469}
+  _attack_duration: 60
 --- !u!50 &8897665017085704489
 Rigidbody2D:
   serializedVersion: 5
