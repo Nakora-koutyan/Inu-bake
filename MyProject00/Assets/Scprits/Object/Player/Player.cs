@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.EventSystems.EventTrigger;
 
 
 public class Player : MonoBehaviour
@@ -15,19 +13,30 @@ public class Player : MonoBehaviour
     private float _jump_speed;
     [SerializeField, Header("HitPoint")]        //Allows you to change the value of variables in Unity
     private int _hp;
+    [SerializeField, Header("InvincibleTime")]        //Allows you to change the value of variables in Unity
+    private float _damage_time;
+    [SerializeField, Header("BlinkingTime")]        //Allows you to change the value of variables in Unity
+    private float _flash_time;
 
     private Vector2 _input_direct;          //
     private Rigidbody2D _rigid;             //物理挙動に関するクラス
+    private Animator _anim;                  //アニメーションに関するクラス型変数
+    private SpriteRenderer _sprite_renderer;
+
     private bool is_jump;                   //ジャンプした？
-    private bool is_player_shake_tree;             //揺らす処理
+    private bool is_player_shake_tree;      //揺らす処理
 
     private readonly float zero_f = 0.0f;
-    float _max_speed;
+    private float _max_speed;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        _rigid = GetComponent<Rigidbody2D>();           //<>で指定したコンポーネントを接続したSpriteから取ってくる処理
+        //<>で指定したコンポーネントを接続したSpriteから取ってくる処理
+        _rigid = GetComponent<Rigidbody2D>();                   //RigidBody2D(物理演算)
+        _anim = GetComponent<Animator>();                       //Animation(アニメーション)
+        _sprite_renderer = GetComponent<SpriteRenderer>();      //SpriteRenderer(スプライト関連)
+
         is_jump = false;
 
         _max_speed = _move_speed * 2.0f;
@@ -51,12 +60,13 @@ public class Player : MonoBehaviour
     {
         //目標の速度ベクトルを計算
         Vector2 target_vec = new Vector2(_input_direct.x * _move_speed, _rigid.linearVelocityY);
-
         //最大速度でクランプ
         target_vec = Vector2.ClampMagnitude(target_vec, _max_speed);
-
         // 目標速度に近づける力を加える (ForceMode.VelocityChange を使用)
         _rigid.linearVelocity = target_vec;
+
+        //animationの切り替え(左右方向に対する加速度があればwalkに切り替える)
+        _anim.SetBool("walk", _input_direct.x != 0.0f);
     }
 
     //左右移動の処理
@@ -79,6 +89,7 @@ public class Player : MonoBehaviour
             //ジャンプ力を乗算し、ジャンプ状態にする
             _rigid.AddForce(Vector2.up * _jump_speed, ForceMode2D.Impulse);
             is_jump = true;
+            _anim.SetBool("jump", is_jump);
         }
     }
 
@@ -86,14 +97,18 @@ public class Player : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         //HitしたObjectが地面ならジャンプflgを解除する
-        if(collision.gameObject.CompareTag("Floor"))
+        if (collision.gameObject.CompareTag("Floor"))
         {
             is_jump = false;
+            _anim.SetBool("jump", is_jump);
         }
         //if hit object's tag is Enemy -> script HitApple(object)
-        else if(collision.gameObject.CompareTag("Enemy"))
+        else if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Bird"))
         {
             HitEnemy(collision.gameObject);
+            //プレイヤーのレイヤー情報を「ダメージを受けた状態」へと更新する
+            gameObject.layer = LayerMask.NameToLayer("PlayerDamage");
+            StartCoroutine(_Damage());
         }
         //if hit object's tag is Apple -> script HitApple(object)
         else if (collision.gameObject.CompareTag("Apple"))
@@ -132,15 +147,46 @@ public class Player : MonoBehaviour
         float player_bottom = transform.position.y - player_half_scale.y + anti_penetration_offset;
         float enemy_top = enemy.transform.position.y + enemy_half_scale.y - anti_penetration_offset;
 
-        if(enemy_top < player_bottom)
+        if(enemy_top < player_bottom && is_jump)
         {
             Destroy(enemy);
             _rigid.AddForce(Vector2.up * _jump_speed, ForceMode2D.Impulse);
+            int score_num = 0;
+            int rand_min_score = 12;
+            int rand_max_score = 16;
+            score_num = UnityEngine.Random.Range(rand_min_score, rand_max_score);
+            GManager.instance.score += score_num;
         }
         else
         {
-            enemy.GetComponent<Enemy>().PlayerDamage(this);
+            if (enemy.CompareTag("Enemy"))
+            {
+                enemy.GetComponent<Enemy>().PlayerDamage(this);
+            }
+            else if(enemy.CompareTag("Bird"))
+            {
+                enemy.GetComponent<Bird>().PlayerDamage(this);
+            }
         }
+    }
+
+    IEnumerator _Damage()
+    {
+        Color color = _sprite_renderer.color;       //スプライトの色情報を取得
+
+        //ダメージ時間の間繰り返すfor文
+        for (int i = 0; i < (int)_damage_time; i++)
+        {
+            yield return new WaitForSeconds(_flash_time);
+            const float alpha_min = 0.0f;
+            _sprite_renderer.color = new Color(color.r, color.g, color.b, alpha_min);
+
+            yield return new WaitForSeconds(_flash_time);
+            const float alpha_max = 1.0f;
+            _sprite_renderer.color = new Color(color.r, color.g, color.b, alpha_max);
+        }
+        _sprite_renderer.color = color;
+        gameObject.layer = LayerMask.NameToLayer("Default");
     }
 
     private void HitApple(GameObject apple)

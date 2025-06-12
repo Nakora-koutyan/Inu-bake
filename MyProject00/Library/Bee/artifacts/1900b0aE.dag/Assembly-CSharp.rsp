@@ -454,7 +454,11 @@
 "Assets/Scprits/Object/Tree/Branch.cs"
 "Assets/Scprits/Object/Tree/Leaf.cs"
 "Assets/Scprits/Object/Tree/Tree.cs"
+"Assets/Scprits/System/CameraManager.cs"
+"Assets/Scprits/System/GManager.cs"
+"Assets/Scprits/UI/AppleCounter.cs"
 "Assets/Scprits/UI/PlayerHP.cs"
+"Assets/Scprits/UI/Score.cs"
 "Assets/Simple 2D Platformer BE2/ReadMe/Scripts/ReadmeBE2.cs"
 -langversion:9.0
 /deterministic

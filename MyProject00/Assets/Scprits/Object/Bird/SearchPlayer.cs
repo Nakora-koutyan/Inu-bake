@@ -7,12 +7,16 @@ public class SearchPlayer : MonoBehaviour
         public Vector2 distance;
         public bool is_find_player;
         public float collider_radius;
+        public Vector2 target_pos;
+        public float distance_length;
 
         public void Initialize()
         {
             distance = new (0.0f,0.0f);
             is_find_player = false;
             collider_radius = 0.0f;
+            target_pos = new (0.0f,0.0f);
+            distance_length = 0.0f;
         }
     }
     SpecialRelation collision_info;
@@ -37,12 +41,6 @@ public class SearchPlayer : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     //プレイヤーがこのセンサーに触れている場合
     private void OnTriggerStay2D(Collider2D collision)
     {
@@ -50,11 +48,26 @@ public class SearchPlayer : MonoBehaviour
         if(collision.gameObject.CompareTag("Player"))
         {
             collision_info.is_find_player = true;
-            collision_info.distance.x = this.transform.position.x - collision.transform.position.x;
+            collision_info.distance.x = collision.transform.position.x - this.transform.position.x;
+            collision_info.distance.y = collision.transform.position.y - this.transform.position.y;
+            collision_info.target_pos = collision.transform.position;
+            collision_info.distance_length = Vector2.Distance(collision_info.distance,collision.transform.position);
         }
     }
 
-    public SpecialRelation FindPlayer()
+    //プレイヤーがセンサーの範囲内にいなかった場合
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        //接触した時の座標などの情報を更新
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            collision_info.is_find_player = false;
+            collision_info.distance.x = 0.0f;
+            collision_info.target_pos = new Vector2(0.0f, 0.0f);
+        }
+    }
+
+    public SpecialRelation PlayerInfo()
     {
         return collision_info;
     }

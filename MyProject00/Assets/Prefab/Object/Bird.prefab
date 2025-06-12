@@ -103,8 +103,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a467f591e4708ce45b310a80fc8f08c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _amplitude: 5
-  _ampli_speed: 1
+  patrol_amplitude: 5
+  patrol_ampli_speed: 1
   _sensor: {fileID: 8751608436411949469}
   _attack_duration: 60
 --- !u!50 &8897665017085704489
