@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CameraManager : MonoBehaviour
@@ -21,14 +22,18 @@ public class CameraManager : MonoBehaviour
     private float _shake_count;                 //現在の振動時間
     private int _current_player_hp;             //現在のPlayerのHP
 
+    //カメラの4種類の座標を取得するための構造体
     public struct CameraPos
     {
         public Vector3 _min;
         public Vector3 _max;
+        public Vector3 _now;
+        public Vector3 _center;
     }
     public CameraPos camera_pos;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    //開始時の初期化処理
     void Start()
     {
         _player = FindFirstObjectByType<Player>();
@@ -50,10 +55,11 @@ public class CameraManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ShakeCheck();
-        ForcedScroll();
+        ShakeCheck();           //ダメージエフェクトを発生
+        ForcedScroll();         //強制スクロール
     }
 
+    //強制スクロール
     private void ForcedScroll()
     {
         float normalize_scroll_speed = 0.005f;                      //スクロール速度を矯正する値
@@ -93,13 +99,18 @@ public class CameraManager : MonoBehaviour
     public CameraPos GetCameraPos()
     {
         //カメラの端の座標を取得
-        Vector2 min_camera_dire = new Vector2(0, 0);
-        Vector2 max_camera_dire = new Vector2(1, 1);
+        const float min = 0.0f;
+        const float max = 1.0f;
+        const float center = 0.5f;
 
         //カメラの左下の座標を取得
-        camera_pos._min = main_camera.ViewportToWorldPoint(new Vector3(min_camera_dire.x, min_camera_dire.y, _init_pos.z));
+        camera_pos._min = main_camera.ViewportToWorldPoint(new Vector3(min, min, _init_pos.z));
         //カメラの右上の座標を取得
-        camera_pos._max = main_camera.ViewportToWorldPoint(new Vector3(max_camera_dire.x, max_camera_dire.y, _init_pos.z));
+        camera_pos._max = main_camera.ViewportToWorldPoint(new Vector3(max, max, _init_pos.z));
+        //カメラの現在座標を取得
+        camera_pos._now = main_camera.ViewportToWorldPoint(new Vector3(transform.position.x, transform.position.y, _init_pos.z));
+        //カメラの中心座標を取得
+        camera_pos._center = main_camera.ViewportToWorldPoint(new Vector3(center, center, _init_pos.z));
 
         return camera_pos;
     }

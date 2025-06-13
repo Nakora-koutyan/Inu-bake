@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -53,6 +54,7 @@ public class Player : MonoBehaviour
     void FixedUpdate() // Rigidbodyの操作は FixedUpdate で行うのが推奨
     {
         PlayerMove();
+        HitFloor();
     }
 
     //左右移動に関する処理
@@ -65,6 +67,7 @@ public class Player : MonoBehaviour
         // 目標速度に近づける力を加える (ForceMode.VelocityChange を使用)
         _rigid.linearVelocity = target_vec;
 
+        if (is_jump) { return; }
         //animationの切り替え(左右方向に対する加速度があればwalkに切り替える)
         _anim.SetBool("walk", _input_direct.x != 0.0f);
     }
@@ -88,32 +91,42 @@ public class Player : MonoBehaviour
         {
             //ジャンプ力を乗算し、ジャンプ状態にする
             _rigid.AddForce(Vector2.up * _jump_speed, ForceMode2D.Impulse);
-            is_jump = true;
-            _anim.SetBool("jump", is_jump);
         }
     }
 
     //オブジェクトと接触した場合
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        //HitしたObjectが地面ならジャンプflgを解除する
-        if (collision.gameObject.CompareTag("Floor"))
-        {
-            is_jump = false;
-            _anim.SetBool("jump", is_jump);
-        }
         //if hit object's tag is Enemy -> script HitApple(object)
-        else if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Bird"))
+        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Bird"))
         {
             HitEnemy(collision.gameObject);
-            //プレイヤーのレイヤー情報を「ダメージを受けた状態」へと更新する
-            gameObject.layer = LayerMask.NameToLayer("PlayerDamage");
-            StartCoroutine(_Damage());
         }
         //if hit object's tag is Apple -> script HitApple(object)
         else if (collision.gameObject.CompareTag("Apple"))
         {
             HitApple(collision.gameObject);
+        }
+    }
+
+    private void HitFloor()
+    {
+        int layer_mask = LayerMask.GetMask("Floor");            //Layer名をint型の情報として取得
+        Vector3 ray_pos = transform.position - new Vector3(0.0f, (transform.lossyScale.y / 2.0f));  //プレイヤーの足元の座標を求めている
+        Vector3 ray_size = new Vector3(transform.lossyScale.x - 0.1f, 0.1f);        //プレイヤーの横のサイズから-1した数を取得
+        //設定したRayと衝突したobjとの情報を取得
+        RaycastHit2D ray_hit = Physics2D.BoxCast(ray_pos, ray_size, 0.0f, Vector2.zero, 0.0f, layer_mask);
+        if(ray_hit.transform == null)
+        {
+            is_jump = true;                     //ジャンプする
+            _anim.SetBool("jump", is_jump);
+            return;
+        }
+
+        if(ray_hit.transform.tag == "Floor" && is_jump)
+        {
+            is_jump = false;
+            _anim.SetBool("jump", is_jump);
         }
     }
 
@@ -125,7 +138,6 @@ public class Player : MonoBehaviour
         {
             //木を揺らす
             HitBranchOfTree(collision.gameObject);
-            Debug.Log("is_shaken_tree" + is_player_shake_tree);
         }
     }
 
@@ -167,6 +179,9 @@ public class Player : MonoBehaviour
             {
                 enemy.GetComponent<Bird>().PlayerDamage(this);
             }
+            //プレイヤーのレイヤー情報を「ダメージを受けた状態」へと更新する
+            gameObject.layer = LayerMask.NameToLayer("PlayerDamage");
+            StartCoroutine(_Damage());
         }
     }
 

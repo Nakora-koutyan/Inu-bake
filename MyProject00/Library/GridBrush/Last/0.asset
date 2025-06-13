@@ -9,21 +9,35 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0abded712ad706044a53ef292972edbb, type: 3}
-  m_Name: GameObject Brush
+  m_Script: {fileID: 11500000, guid: 4009bdfbd908ccf41a101be04ed6567d, type: 3}
+  m_Name: Default Brush
   m_EditorClassIdentifier: 
   m_Cells:
-  - m_GameObject: {fileID: 76732903976009274, guid: 83a678a16f6189f4283cebf9d55191f9, type: 3}
-    m_Offset: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 3.5, y: 3.5, z: 1}
-    m_Orientation: {x: 0, y: 0, z: 0, w: 1}
+  - m_Tile: {fileID: 11400000, guid: f0c8781d7b622e249b8d7981bb5f06f7, type: 2}
+    m_Matrix:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_TileChangeDataList: []
   m_Size: {x: 1, y: 1, z: 1}
   m_Pivot: {x: 0, y: 0, z: 0}
   m_CanChangeZPosition: 0
-  hiddenGridLayout:
-    cellSize: {x: 1, y: 1, z: 1}
-    cellGap: {x: 0, y: 0, z: 0}
-    cellLayout: 0
-    cellSwizzle: 0
-  hiddenGrid: {fileID: 0}
-  m_Anchor: {x: 0.5, y: 0.5, z: 0}
+  m_FloodFillContiguousOnly: 1
+  m_LastPickedLayout: 0
+  m_LastPickedCellSwizzle: 0
+  m_LastPickedCellSize: {x: 1, y: 1, z: 0}
+  m_LastPickedCellGap: {x: 0, y: 0, z: 0}

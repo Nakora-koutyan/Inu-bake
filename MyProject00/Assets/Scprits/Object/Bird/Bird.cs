@@ -25,6 +25,8 @@ public class Bird : MonoBehaviour
     private float _time;                        //時間を計測
     private SearchPlayer _search_player_script; //
 
+    private Animator _anim;
+
     private Vector2 _distance_player;           //
 
     private const int _attack_power = 1;
@@ -60,7 +62,7 @@ public class Bird : MonoBehaviour
         {
             Debug.LogError("センサーGameObjectにSearchPlayerスクリプトが見つかりませんでした", this);
         }
-
+        _anim = GetComponent<Animator>();                       //Animation(アニメーション)
         velocity = new(patrol_amplitude, 0.0f);
         _time = 0.0f;
         _attack_duration = 1.0f;
