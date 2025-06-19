@@ -12,7 +12,6 @@ public class Score : MonoBehaviour
         _score_text = GetComponent<TextMeshProUGUI>();
         if(_score_text == null)
         {
-            Debug.LogError("TextMeshProUGUI component not found on this GameObject");
             Destroy(this);
             return;             //コンポーネントが見つからなければこれ以上処理しない
         }
@@ -23,7 +22,6 @@ public class Score : MonoBehaviour
         }
         else
         {
-            Debug.Log("Game Manager is not! Maybe forgrt to put GameManager in this Scene");
             Destroy(this);
         }
     }

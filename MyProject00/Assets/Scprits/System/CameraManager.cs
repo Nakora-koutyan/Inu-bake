@@ -62,37 +62,54 @@ public class CameraManager : MonoBehaviour
     //強制スクロール
     private void ForcedScroll()
     {
-        float normalize_scroll_speed = 0.005f;                      //スクロール速度を矯正する値
-        float scroll_x = _scroll_speed * normalize_scroll_speed;    //スクロール速度の矯正
-        float update_pos = transform.position.x + scroll_x;         //カメラ座標にスクロール速度を加算
-        transform.position = new Vector3(update_pos, _init_pos.y, _init_pos.z);         //座標更新
+        Vector2 scroll;
+        Vector2 update_pos;
+
+        //強制スクロール(横)
+        const float normalize_scroll_speed = 0.05f;                                 //スクロール速度を矯正する値
+        scroll.x = _scroll_speed * normalize_scroll_speed;                          //スクロール速度の矯正
+        update_pos.x = transform.position.x + scroll.x;                             //カメラ座標にスクロール速度を加算
+        //プレイヤーのY座標に合わせたスクロール(縦)
+        scroll.y = _player.transform.position.y;                                    //プレイヤーのY座標をスクロールの値とする
+        update_pos.y = Mathf.Clamp(scroll.y, _init_pos.y, Mathf.Infinity);          //ScrollのY軸は初期座標以下にならず上方向への制限はない
+
+        transform.position = new Vector3(update_pos.x, update_pos.y, _init_pos.z);  //カメラの座標更新
     }
 
+    //カメラ振動をさせるか判断する
     private void ShakeCheck()
     {
+        //PlayerのHPが減少した場合、振動させる
         if(_current_player_hp != _player.GetHp())
         {
-            _current_player_hp = _player.GetHp();
-            _shake_count = 0.0f;
-            StartCoroutine(ShakeCamera());
+            const float reset_value = 0.0f;
+            _current_player_hp = _player.GetHp();   //現在HP情報を更新
+            _shake_count = reset_value;                    //振動時間をリセットする
+            StartCoroutine(ShakeCamera());          //カメラの振動を開始
         }
     }
 
+    //カメラを振動させる
     IEnumerator ShakeCamera()
     {
-        Vector3 init_pos = transform.position;
+        Vector3 init_pos = transform.position;      //初期座標
 
+        //設定された振動時間以内の間
+        //カメラを振動させる
         while (_shake_count < _camera_shake_time)
         {
+            //X,Y座標共に振動幅に基づいた揺れを起こす
             float x = init_pos.x + Random.Range(-_shake_scale, _shake_scale);
             float y = init_pos.y + Random.Range(-_shake_scale, _shake_scale);
             transform.position = new Vector3(x, y, init_pos.z);
 
+            //振動時間をカウント
             _shake_count += Time.deltaTime;
 
             yield return null;
         }
 
+        //初期座標に戻す
         transform.position = init_pos;
     }
 

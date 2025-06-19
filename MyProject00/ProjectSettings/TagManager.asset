@@ -13,6 +13,9 @@ TagManager:
   - Platform
   - Apple
   - Bird
+  - Goal
+  - Witch
+  - Serif
   layers:
   - Default
   - TransparentFX
@@ -23,8 +26,8 @@ TagManager:
   - PlayerDamage
   - Enemy
   - Floor
-  - 
-  - 
+  - Bird
+  - Goal
   - 
   - 
   - 

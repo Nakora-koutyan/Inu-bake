@@ -1,9 +1,7 @@
 using System;
 using System.Collections;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 
 public class Player : MonoBehaviour
 {
@@ -19,13 +17,14 @@ public class Player : MonoBehaviour
     [SerializeField, Header("BlinkingTime")]        //Allows you to change the value of variables in Unity
     private float _flash_time;
 
-    private Vector2 _input_direct;          //
-    private Rigidbody2D _rigid;             //物理挙動に関するクラス
-    private Animator _anim;                  //アニメーションに関するクラス型変数
+    private Vector2 _input_direct;                  //入力方向
+    private Rigidbody2D _rigid;                     //物理挙動に関するクラス
+    private Animator _anim;                         //アニメーションに関するクラス型変数
     private SpriteRenderer _sprite_renderer;
 
-    private bool is_jump;                   //ジャンプした？
-    private bool is_player_shake_tree;      //揺らす処理
+    private bool is_jump;                           //ジャンプした？
+    private bool is_player_shake_tree = false;      //木を揺らした？
+    private bool is_damage;                         //ダメージを受けた？
 
     private readonly float zero_f = 0.0f;
     private float _max_speed;
@@ -41,20 +40,19 @@ public class Player : MonoBehaviour
         is_jump = false;
 
         _max_speed = _move_speed * 2.0f;
-        is_player_shake_tree = false;
+        is_damage = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //デバッグ表示処理
-        Debug.Log(_hp);
     }
 
     void FixedUpdate() // Rigidbodyの操作は FixedUpdate で行うのが推奨
     {
         PlayerMove();
         HitFloor();
+        _LookMoveDirect();
     }
 
     //左右移動に関する処理
@@ -67,7 +65,10 @@ public class Player : MonoBehaviour
         // 目標速度に近づける力を加える (ForceMode.VelocityChange を使用)
         _rigid.linearVelocity = target_vec;
 
-        if (is_jump) { return; }
+        if (is_jump)
+        { 
+            return; 
+        }
         //animationの切り替え(左右方向に対する加速度があればwalkに切り替える)
         _anim.SetBool("walk", _input_direct.x != 0.0f);
     }
@@ -77,6 +78,29 @@ public class Player : MonoBehaviour
     {
         //context内のVector2の情報をinput_directに代入して方向を取得できるようにする
         _input_direct = context.ReadValue<Vector2>();
+    }
+    //入力方向によって向きを変える処理
+    private void _LookMoveDirect()
+    {
+        const float direct_center = 0.0f;
+        if (_input_direct.x == direct_center)
+        {
+            return;
+        }
+
+        const float rotate_left = 180.0f; // 左を向くためのY軸回転 (180度)
+        const float rotate_right = 0.0f;  // 右を向くためのY軸回転 (0度)
+        const float no_rorate = 0.0f;
+        if (_input_direct.x < direct_center)
+        {
+            // 左を向く回転に設定
+            transform.rotation = Quaternion.Euler(no_rorate, rotate_left, no_rorate);
+        }
+        else if (_input_direct.x > direct_center)
+        {
+            // 右を向く回転に設定
+            transform.rotation = Quaternion.Euler(no_rorate, rotate_right, no_rorate);
+        }
     }
 
     //ジャンプ処理
@@ -98,7 +122,7 @@ public class Player : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         //if hit object's tag is Enemy -> script HitApple(object)
-        if (collision.gameObject.CompareTag("Enemy") || collision.gameObject.CompareTag("Bird"))
+        if (collision.gameObject.CompareTag("Enemy"))
         {
             HitEnemy(collision.gameObject);
         }
@@ -113,7 +137,7 @@ public class Player : MonoBehaviour
     {
         int layer_mask = LayerMask.GetMask("Floor");            //Layer名をint型の情報として取得
         Vector3 ray_pos = transform.position - new Vector3(0.0f, (transform.lossyScale.y / 2.0f));  //プレイヤーの足元の座標を求めている
-        Vector3 ray_size = new Vector3(transform.lossyScale.x - 0.1f, 0.1f);        //プレイヤーの横のサイズから-1した数を取得
+        Vector3 ray_size = new Vector3(transform.lossyScale.x - 0.1f, 0.1f);                        //プレイヤーの横のサイズから-1した数を取得
         //設定したRayと衝突したobjとの情報を取得
         RaycastHit2D ray_hit = Physics2D.BoxCast(ray_pos, ray_size, 0.0f, Vector2.zero, 0.0f, layer_mask);
         if(ray_hit.transform == null)
@@ -155,27 +179,31 @@ public class Player : MonoBehaviour
         Vector2 player_half_scale = transform.lossyScale * half;
         Vector2 enemy_half_scale = enemy.transform.lossyScale * half;
 
-        const float anti_penetration_offset = 0.1f;
-        float player_bottom = transform.position.y - player_half_scale.y + anti_penetration_offset;
-        float enemy_top = enemy.transform.position.y + enemy_half_scale.y - anti_penetration_offset;
+        const float anti_penetration_offset = 0.02f;        //当たり判定の補正用変数
+        const float detection_range_rcale = 3.0f;           //敵の当たり判定を補正する用の変数
+        float player_bottom = transform.position.y - player_half_scale.y - anti_penetration_offset;
+        float enemy_top = enemy.transform.position.y + enemy_half_scale.y - anti_penetration_offset * detection_range_rcale;
 
         if(enemy_top < player_bottom && is_jump)
         {
+            //敵をDeleteする
             Destroy(enemy);
+            //踏んだ勢いでもう一度ジャンプする
             _rigid.AddForce(Vector2.up * _jump_speed, ForceMode2D.Impulse);
-            int score_num = 0;
-            int rand_min_score = 12;
-            int rand_max_score = 16;
-            score_num = UnityEngine.Random.Range(rand_min_score, rand_max_score);
+
+            //ランダムスコア獲得
+            const int rand_min_score = 12;
+            const int rand_max_score = 16;
+            int score_num = UnityEngine.Random.Range(rand_min_score, rand_max_score);
             GManager.instance.score += score_num;
         }
         else
         {
-            if (enemy.CompareTag("Enemy"))
+            if (enemy.layer == LayerMask.NameToLayer("Enemy"))
             {
                 enemy.GetComponent<Enemy>().PlayerDamage(this);
             }
-            else if(enemy.CompareTag("Bird"))
+            else if(enemy.layer == LayerMask.NameToLayer("Bird"))
             {
                 enemy.GetComponent<Bird>().PlayerDamage(this);
             }
@@ -188,6 +216,7 @@ public class Player : MonoBehaviour
     IEnumerator _Damage()
     {
         Color color = _sprite_renderer.color;       //スプライトの色情報を取得
+        is_damage = true;
 
         //ダメージ時間の間繰り返すfor文
         for (int i = 0; i < (int)_damage_time; i++)
@@ -201,6 +230,8 @@ public class Player : MonoBehaviour
             _sprite_renderer.color = new Color(color.r, color.g, color.b, alpha_max);
         }
         _sprite_renderer.color = color;
+
+        is_damage = false;
         gameObject.layer = LayerMask.NameToLayer("Default");
     }
 
@@ -224,14 +255,9 @@ public class Player : MonoBehaviour
             throw new ArgumentNullException(nameof(tree));
         }
 
-        //念のためLog.messageを出力
-        Debug.Log("Hit Branch");
-
-        if (is_player_shake_tree)
+        if (is_player_shake_tree == true)
         {
-            tree.GetComponent<BranchHit>().HandleTreeShaken(true);
-
-            StartCoroutine(WaitForSpecifiedTime(2.0f));
+            tree.GetComponent<BranchHit>().HandleTreeShaken();
         }
 
     }
@@ -245,7 +271,7 @@ public class Player : MonoBehaviour
         //boolをfalseに変更
         is_player_shake_tree = false;
 
-        //Debug.Log("End Coroutine");
+        Debug.Log("End Coroutine");
     }
 
     public void PlayerOnShakeMotion(InputAction.CallbackContext context)
@@ -258,15 +284,22 @@ public class Player : MonoBehaviour
         }
         else
         {
+            Debug.Log("木を揺らしました");
             is_player_shake_tree = true;
+
+            const float shake_time = 2.0f;
+            StartCoroutine(WaitForSpecifiedTime(shake_time));
         }
     }
 
     //ダメージを受けた際の処理
     public void Damage(int damage)
     {
-        //HP減少処理(0の方が大きければ0が返ってくる)
-        _hp = Mathf.Max(_hp - damage, (int)zero_f);
+        if (!is_damage)
+        {
+            //HP減少処理(0の方が大きければ0が返ってくる)
+            _hp = Mathf.Max(_hp - damage, (int)zero_f);
+        }
     }
 
     public int GetHp()

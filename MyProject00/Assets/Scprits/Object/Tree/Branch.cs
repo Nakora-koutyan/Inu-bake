@@ -17,10 +17,10 @@ public class BranchHit : MonoBehaviour
     }
 
     //プレイヤーによって揺らされているかを受け取る処理
-    public void HandleTreeShaken(bool notify) // notify 引数は今回不要になるが、Player側の互換性のため残しても良い
+    public void HandleTreeShaken() // notify 引数は今回不要になるが、Player側の互換性のため残しても良い
     {
         // notify が true の場合のみ、親の Tree に揺らす開始を指示
-        if (notify && _parent_tree != null)
+        if (_parent_tree != null)
         {
             // ここで親の Tree コンポーネントの StartTreeShaken() メソッドを呼び出す
             _parent_tree.StartTreeShaken();

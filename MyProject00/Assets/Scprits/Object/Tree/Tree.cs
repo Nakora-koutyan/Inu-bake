@@ -49,7 +49,7 @@ public class Tree : MonoBehaviour
         float _amplitude = Mathf.Sin(Time.time * t);
 
         //変動座標を自身の一番最初の座標に加算
-        this.transform.position = new Vector2(init_pos.x + _amplitude * _sway_amount, init_pos.y);
+        transform.position = new Vector2(init_pos.x + _amplitude * _sway_amount, init_pos.y);
     }
 
     public void StartTreeShaken()
@@ -84,14 +84,8 @@ public class Tree : MonoBehaviour
         yield return new WaitForSeconds(second);
 
         //揺れのリセットとして初期座標に戻す
-        this.transform.position = init_pos;
+        transform.position = init_pos;
         //boolをfalseに変更
         is_shaken = false;
-
-        if (_leaf != null)
-        {
-            //生成通知を受け取っていない状態にする
-            _leaf.GetComponent<LeafHit>().NotifySpawnedApple(false);
-        }
     }
 }

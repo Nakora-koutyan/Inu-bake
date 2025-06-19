@@ -15,9 +15,9 @@ GameObject:
   - component: {fileID: 5957532674029327077}
   - component: {fileID: -4303984023207869119}
   - component: {fileID: 6615628490382315054}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Bird
-  m_TagString: Bird
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -31,7 +31,7 @@ Transform:
   m_GameObject: {fileID: 76732903976009274}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.4061, y: 0.87545, z: 0}
+  m_LocalPosition: {x: -2.23, y: 0.17, z: 0}
   m_LocalScale: {x: 3.5, y: 3.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -180,7 +180,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.4, y: 0.41}
+  m_Size: {x: 0.4, y: 0.4}
   m_EdgeRadius: 0
 --- !u!114 &-4303984023207869119
 MonoBehaviour:
@@ -228,7 +228,7 @@ GameObject:
   - component: {fileID: 3677700780620919401}
   - component: {fileID: 5147276272116862339}
   - component: {fileID: 5168645210098255710}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: SearchCenser
   m_TagString: Untagged
   m_Icon: {fileID: 0}
