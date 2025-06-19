@@ -116,12 +116,4 @@ public abstract class FieldMessageBase : MonoBehaviour
     }
 
     protected abstract IEnumerator OnAction();
-
-    protected void ShowMessage(string message)
-    {
-        if (target != null) // targetも念のためnullチェック
-        {
-            this.target.text = message;
-        }
-    }
 }
