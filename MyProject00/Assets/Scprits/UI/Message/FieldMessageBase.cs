@@ -1,62 +1,83 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public abstract class FieldMessageBase : MonoBehaviour
 {
     [Header("Canvas")]
-    public Canvas serif_window;         //セリフ用の枠
+    public Canvas serif_window; //セリフ用の枠
     [Header("Text")]
     public TextMeshProUGUI target;
 
     private bool is_contacted;
-    
-    private IEnumerator coroutine;      //コルーチン
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private IEnumerator coroutine; //コルーチン
+
     void Start()
     {
-        //window停止
-        serif_window.gameObject.SetActive(false);
+        // Nullチェックを追加: Inspectorで設定されていない可能性も考慮
+        if (serif_window != null)
+        {
+            serif_window.gameObject.SetActive(false);
+        }
 
         is_contacted = false;
     }
 
-    // colliderをもつオブジェクトの領域に入ったとき
     private void OnTriggerEnter2D(Collider2D collider)
     {
         if (collider.gameObject.CompareTag("Player"))
         {
             is_contacted = true;
-            // プレイヤーが入ってきたときに、まだコルーチンが始まっていない場合のみ開始
             if (coroutine == null)
             {
-                coroutine = CreateCoroutine();
-                StartCoroutine(coroutine);
+                // コルーチン生成前にnullチェックを追加
+                if (serif_window != null) // serif_windowが破棄されているならコルーチンを開始しない
+                {
+                    coroutine = CreateCoroutine();
+                    StartCoroutine(coroutine);
+                }
+                else
+                {
+                    Debug.LogWarning("serif_window is null when OnTriggerEnter2D is called. Cannot start message coroutine.");
+                }
             }
         }
     }
 
-    // colliderをもつオブジェクトの領域外にでたとき
     private void OnTriggerExit2D(Collider2D collider)
     {
-        if(collider.gameObject.CompareTag("Player"))
+        if (collider.gameObject.CompareTag("Player"))
         {
             is_contacted = false;
 
-            // プレイヤーが範囲外に出たら、コルーチンを停止し、リソースをクリアする
             if (coroutine != null)
             {
                 StopCoroutine(coroutine);
-                CloseMessageWindow(); // ウィンドウを閉じる処理をまとめる
+                coroutine = null; // コルーチンが停止したらnullに戻す
+
+                // ここでnullチェックを追加
+                if (serif_window != null)
+                {
+                    CloseMessageWindow();
+                }
+                else
+                {
+                    Debug.LogWarning("serif_window is null when OnTriggerExit2D is called. Cannot close message window.");
+                }
             }
         }
     }
 
-    //コルーチンを生成
     private IEnumerator CreateCoroutine()
     {
+        // コルーチン内で最初にnullチェック
+        if (serif_window == null)
+        {
+            Debug.LogError("serif_window is null. Cannot display message window.");
+            yield break; // コルーチンをここで終了
+        }
+
         //セリフ枠を起動
         serif_window.gameObject.SetActive(true);
 
@@ -67,24 +88,40 @@ public abstract class FieldMessageBase : MonoBehaviour
         {
             //完全にメッセージ表示が終わったらウィンドウを閉じる
             yield return new WaitForSeconds(1.0f); // 例えば1秒待つ
-            CloseMessageWindow();
+
+            // ここでもnullチェックを追加
+            if (serif_window != null)
+            {
+                CloseMessageWindow();
+            }
         }
     }
 
-    //テキストウィンドウを閉じる
     private void CloseMessageWindow()
     {
-        //Window終了
-        target.text = "";                          //表示テキストを無にする
-        serif_window.gameObject.SetActive(false);  //Window表示
+        // 最も重要なnullチェック
+        if (serif_window == null)
+        {
+            // 既に破棄されている場合は何もしない
+            Debug.LogWarning("Attempted to close message window, but serif_window is already null.");
+            return;
+        }
+
+        //targetも念のためnullチェック
+        if (target != null)
+        {
+            target.text = ""; //表示テキストを無にする
+        }
+        serif_window.gameObject.SetActive(false); //Window表示
     }
 
-    //テキスト表示を起動
     protected abstract IEnumerator OnAction();
 
-    //メッセージを表示
     protected void ShowMessage(string message)
     {
-        this.target.text = message;
+        if (target != null) // targetも念のためnullチェック
+        {
+            this.target.text = message;
+        }
     }
 }
