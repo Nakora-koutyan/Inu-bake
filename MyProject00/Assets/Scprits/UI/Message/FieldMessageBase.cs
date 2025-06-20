@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public abstract class FieldMessageBase : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public abstract class FieldMessageBase : MonoBehaviour
     [Header("Text")]
     public TextMeshProUGUI target;
 
-    private bool is_contacted;
+    private bool _is_contacted;
 
     private IEnumerator coroutine; //コルーチン
 
@@ -21,14 +22,14 @@ public abstract class FieldMessageBase : MonoBehaviour
             serif_window.gameObject.SetActive(false);
         }
 
-        is_contacted = false;
+        _is_contacted = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
     {
         if (collider.gameObject.CompareTag("Player"))
         {
-            is_contacted = true;
+            _is_contacted = true;
             if (coroutine == null)
             {
                 // コルーチン生成前にnullチェックを追加
@@ -49,7 +50,7 @@ public abstract class FieldMessageBase : MonoBehaviour
     {
         if (collider.gameObject.CompareTag("Player"))
         {
-            is_contacted = false;
+            _is_contacted = false;
 
             if (coroutine != null)
             {
@@ -84,7 +85,7 @@ public abstract class FieldMessageBase : MonoBehaviour
         //セリフ表示開始(中身は子クラスにて)
         yield return OnAction();
 
-        if (!is_contacted)
+        if (!_is_contacted)
         {
             //完全にメッセージ表示が終わったらウィンドウを閉じる
             yield return new WaitForSeconds(1.0f); // 例えば1秒待つ
