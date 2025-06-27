@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
@@ -17,13 +16,14 @@ public class Player : MonoBehaviour
     [SerializeField, Header("BlinkingTime")]        //Allows you to change the value of variables in Unity
     private float _flash_time;
 
-    private Vector2 _input_direct;                  //入力方向
+    private Vector2 move_value;                  //入力方向
     private Rigidbody2D _rigid;                     //物理挙動に関するクラス
     private Animator _anim;                         //アニメーションに関するクラス型変数
-    private SpriteRenderer _sprite_renderer;
+    private SpriteRenderer _sprite_renderer;        //
+    private PlayerInputHandler _input_handler;      //Input処理を受け取るため
 
-    private bool is_jump;                           //ジャンプした？
-    private bool is_player_shake_tree = false;      //木を揺らした？
+    private bool is_jumping;                        //ジャンプした？
+    private bool is_shaking = false;                //木を揺らした？
     private bool is_damage;                         //ダメージを受けた？
 
     private readonly float zero_f = 0.0f;
@@ -36,16 +36,27 @@ public class Player : MonoBehaviour
         _rigid = GetComponent<Rigidbody2D>();                   //RigidBody2D(物理演算)
         _anim = GetComponent<Animator>();                       //Animation(アニメーション)
         _sprite_renderer = GetComponent<SpriteRenderer>();      //SpriteRenderer(スプライト関連)
+        _input_handler = GetComponent<PlayerInputHandler>();     //Input処理関連
 
-        is_jump = false;
+        is_jumping = false;
 
         _max_speed = _move_speed * 2.0f;
         is_damage = false;
     }
-
-    // Update is called once per frame
     void Update()
     {
+        //Jump処理の監視
+        if (_input_handler.JumpLicence() && !is_jumping)
+        {
+            PlayerOnJump();
+        }
+        //Shake処理の監視
+        if (_input_handler.ShakeLicence() && !is_shaking)
+        {
+            PlayerOnShakeMotion();
+        }
+        //input_handlerから入力値を取得
+        move_value = _input_handler.MoveValue();
     }
 
     void FixedUpdate() // Rigidbodyの操作は FixedUpdate で行うのが推奨
@@ -59,31 +70,25 @@ public class Player : MonoBehaviour
     private void PlayerMove()
     {
         //目標の速度ベクトルを計算
-        Vector2 target_vec = new Vector2(_input_direct.x * _move_speed, _rigid.linearVelocityY);
+        Vector2 target_vec = new Vector2(move_value.x * _move_speed, _rigid.linearVelocityY);
         //最大速度でクランプ
         target_vec = Vector2.ClampMagnitude(target_vec, _max_speed);
         // 目標速度に近づける力を加える (ForceMode.VelocityChange を使用)
         _rigid.linearVelocity = target_vec;
 
-        if (is_jump)
+        if (is_jumping)
         { 
             return; 
         }
         //animationの切り替え(左右方向に対する加速度があればwalkに切り替える)
-        _anim.SetBool("walk", _input_direct.x != 0.0f);
+        _anim.SetBool("walk", move_value.x != 0.0f);
     }
 
-    //左右移動の処理
-    public void PlayerOnMove(InputAction.CallbackContext context)
-    {
-        //context内のVector2の情報をinput_directに代入して方向を取得できるようにする
-        _input_direct = context.ReadValue<Vector2>();
-    }
     //入力方向によって向きを変える処理
     private void _LookMoveDirect()
     {
         const float direct_center = 0.0f;
-        if (_input_direct.x == direct_center)
+        if (move_value.x == direct_center)
         {
             return;
         }
@@ -91,12 +96,12 @@ public class Player : MonoBehaviour
         const float rotate_left = 180.0f; // 左を向くためのY軸回転 (180度)
         const float rotate_right = 0.0f;  // 右を向くためのY軸回転 (0度)
         const float no_rorate = 0.0f;
-        if (_input_direct.x < direct_center)
+        if (move_value.x < direct_center)
         {
             // 左を向く回転に設定
             transform.rotation = Quaternion.Euler(no_rorate, rotate_left, no_rorate);
         }
-        else if (_input_direct.x > direct_center)
+        else if (move_value.x > direct_center)
         {
             // 右を向く回転に設定
             transform.rotation = Quaternion.Euler(no_rorate, rotate_right, no_rorate);
@@ -104,18 +109,10 @@ public class Player : MonoBehaviour
     }
 
     //ジャンプ処理
-    public void PlayerOnJump(InputAction.CallbackContext context)
+    public void PlayerOnJump()
     {
-        //Jumpキーが押されていないorジャンプ状態であれば処理を終了
-        if (!context.performed || is_jump)
-        {
-            return;
-        }
-        else
-        {
-            //ジャンプ力を乗算し、ジャンプ状態にする
-            _rigid.AddForce(Vector2.up * _jump_speed, ForceMode2D.Impulse);
-        }
+        //ジャンプ力を乗算し、ジャンプ状態にする
+        _rigid.AddForce(Vector2.up * _jump_speed, ForceMode2D.Impulse);
     }
 
     //オブジェクトと接触した場合
@@ -136,21 +133,27 @@ public class Player : MonoBehaviour
     private void HitFloor()
     {
         int layer_mask = LayerMask.GetMask("Floor");            //Layer名をint型の情報として取得
-        Vector3 ray_pos = transform.position - new Vector3(0.0f, (transform.lossyScale.y / 2.0f));  //プレイヤーの足元の座標を求めている
-        Vector3 ray_size = new Vector3(transform.lossyScale.x - 0.1f, 0.1f);                        //プレイヤーの横のサイズから-1した数を取得
+        const float zero_value = 0.0f;                          //0を示す値
+
+        const float half_scale = 0.5f;                          //lossyScaleを半分化する値
+        Vector3 ray_pos = transform.position - new Vector3(zero_value, (transform.lossyScale.y * half_scale));  //プレイヤーの足元の座標を求めている
+
+        const float normalize_hit_collision = 0.1f;             //床との接触をずらすための補数値
+        Vector3 ray_size = new Vector3(transform.lossyScale.x - normalize_hit_collision, normalize_hit_collision);                        //プレイヤーの横のサイズから-1した数を取得
+
         //設定したRayと衝突したobjとの情報を取得
-        RaycastHit2D ray_hit = Physics2D.BoxCast(ray_pos, ray_size, 0.0f, Vector2.zero, 0.0f, layer_mask);
+        RaycastHit2D ray_hit = Physics2D.BoxCast(ray_pos, ray_size, zero_value, Vector2.zero, zero_value, layer_mask);
         if(ray_hit.transform == null)
         {
-            is_jump = true;                     //ジャンプする
-            _anim.SetBool("jump", is_jump);
+            is_jumping = true;                     //ジャンプする
+            _anim.SetBool("jump", is_jumping);
             return;
         }
 
-        if(ray_hit.transform.tag == "Floor" && is_jump)
+        if(ray_hit.transform.tag == "Floor" && is_jumping)
         {
-            is_jump = false;
-            _anim.SetBool("jump", is_jump);
+            is_jumping = false;
+            _anim.SetBool("jump", is_jumping);
         }
     }
 
@@ -184,7 +187,7 @@ public class Player : MonoBehaviour
         float player_bottom = transform.position.y - player_half_scale.y - anti_penetration_offset;
         float enemy_top = enemy.transform.position.y + enemy_half_scale.y - anti_penetration_offset * detection_range_rcale;
 
-        if(enemy_top < player_bottom && is_jump)
+        if(enemy_top < player_bottom && is_jumping)
         {
             //敵をDeleteする
             Destroy(enemy);
@@ -255,7 +258,7 @@ public class Player : MonoBehaviour
             throw new ArgumentNullException(nameof(tree));
         }
 
-        if (is_player_shake_tree == true)
+        if (is_shaking == true)
         {
             tree.GetComponent<BranchHit>().HandleTreeShaken();
         }
@@ -269,27 +272,18 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(second);
 
         //boolをfalseに変更
-        is_player_shake_tree = false;
+        is_shaking = false;
 
         Debug.Log("End Coroutine");
     }
 
-    public void PlayerOnShakeMotion(InputAction.CallbackContext context)
+    public void PlayerOnShakeMotion()
     {
-        //V(仮)キーが押されていないorすでに揺れている場合
-        //(二回もtrueにする必要はないため)
-        if (!context.performed || is_player_shake_tree)
-        {
-            return;
-        }
-        else
-        {
-            Debug.Log("木を揺らしました");
-            is_player_shake_tree = true;
+        Debug.Log("木を揺らしました");
+        is_shaking = true;
 
-            const float shake_time = 2.0f;
-            StartCoroutine(WaitForSpecifiedTime(shake_time));
-        }
+        const float shake_time = 2.0f;
+        StartCoroutine(WaitForSpecifiedTime(shake_time));
     }
 
     //ダメージを受けた際の処理

@@ -196,7 +196,10 @@ public class Bird : MonoBehaviour
         Vector2 offset_center;
         offset_center.x = Mathf.Cos(change_angle_radian) * root_radius;
         offset_center.y = Mathf.Sin(change_angle_radian) * _fall_depth;
-        transform.Rotate(no_rotate, no_rotate, Mathf.Sin(change_angle_radian));
+
+        //Z軸の回転(うまくいかない)
+        //transform.Rotate(no_rotate, no_rotate, angle_degree);
+        transform.eulerAngles = new Vector3(no_rotate, no_rotate, angle_degree);
 
         //5.始点からのオフセットを計算
         current_offset = (half_circle_center - attack_start_pos) + offset_center;
@@ -269,5 +272,11 @@ public class Bird : MonoBehaviour
     {
         const int _attack_power = 1;
         player.Damage(_attack_power);
+    }
+
+    private bool IsCamera()
+    {
+        bool ret = false;
+        return ret;
     }
 }

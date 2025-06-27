@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using System.Runtime.CompilerServices;
 
 public class AppleCounter : MonoBehaviour
 {
@@ -12,22 +11,7 @@ public class AppleCounter : MonoBehaviour
     void Start()
     {
         _total_apple_text = GetComponent<TextMeshProUGUI>();
-        //if (_total_apple_text == null)
-        //{
-        //    Debug.LogError("TextMeshProUGUI component not found on this GameObject");
-        //    Destroy(this);
-        //    return;             //コンポーネントが見つからなければこれ以上処理しない
-        //}
-
-        //if (GManager.instance != null)
-        //{
-        //    _total_apple_text.text = "SCORE : " + GManager.instance.score;
-        //}
-        //else
-        //{
-        //    Debug.Log("Game Manager is not! Maybe forgrt to put GameManager in this Scene");
-        //    Destroy(this);
-        //}
+        
         UpdateAppleCountText();
     }
 
@@ -67,5 +51,11 @@ public class AppleCounter : MonoBehaviour
         {
             Debug.LogWarning("AppleCount not apply.");
         }
+    }
+
+    //回収した全部のリンゴの数
+    public int GetTotalAppleCount()
+    {
+        return current_total_apple;
     }
 }

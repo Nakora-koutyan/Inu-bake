@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CameraManager : MonoBehaviour
@@ -65,9 +64,11 @@ public class CameraManager : MonoBehaviour
         Vector2 scroll;
         Vector2 update_pos;
 
+        float time = Time.deltaTime;
+
         //強制スクロール(横)
-        const float normalize_scroll_speed = 0.05f;                                 //スクロール速度を矯正する値
-        scroll.x = _scroll_speed * normalize_scroll_speed;                          //スクロール速度の矯正
+        const float normalize_scroll_speed = 0.1f;                                 //スクロール速度を矯正する値
+        scroll.x = (_scroll_speed * normalize_scroll_speed) * time;                 //スクロール速度の矯正
         update_pos.x = transform.position.x + scroll.x;                             //カメラ座標にスクロール速度を加算
         //プレイヤーのY座標に合わせたスクロール(縦)
         scroll.y = _player.transform.position.y;                                    //プレイヤーのY座標をスクロールの値とする

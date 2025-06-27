@@ -11,18 +11,16 @@ public abstract class FieldMessageBase : MonoBehaviour
     public TextMeshProUGUI target;
 
     private bool _is_contacted;
-
+    
     private IEnumerator coroutine; //コルーチン
 
-    void Start()
+    private void Start()
     {
-        // Nullチェックを追加: Inspectorで設定されていない可能性も考慮
-        if (serif_window != null)
+        if(serif_window == null)
         {
-            serif_window.gameObject.SetActive(false);
+            Debug.Log("No Object! Warning!!");
         }
-
-        _is_contacted = false;
+        serif_window.gameObject.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collider)
@@ -81,6 +79,9 @@ public abstract class FieldMessageBase : MonoBehaviour
 
         //セリフ枠を起動
         serif_window.gameObject.SetActive(true);
+        
+        const float time_stop_mode = 0.0f;
+        Time.timeScale = time_stop_mode;
 
         //セリフ表示開始(中身は子クラスにて)
         yield return OnAction();
@@ -113,8 +114,9 @@ public abstract class FieldMessageBase : MonoBehaviour
         {
             target.text = ""; //表示テキストを無にする
         }
-        serif_window.gameObject.SetActive(false); //Window表示
+        serif_window.gameObject.SetActive(false);   //Window表示
     }
 
-    protected abstract IEnumerator OnAction();
+    protected abstract IEnumerator OnAction();      //ボタンが押された時のアクション
+    protected abstract void DesideMessage();      //表示メッセージを決定
 }

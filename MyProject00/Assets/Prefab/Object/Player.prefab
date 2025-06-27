@@ -282,8 +282,12 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 47710325-3dc2-496c-b735-5cde2416023f
     m_ActionName: 'Player/Jump[/Keyboard/space,/XInputControllerWindows/buttonSouth]'
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: fdb544c4-18c4-4437-9d4a-08235966c2a8
+    m_ActionName: 'Player/Click[/XInputControllerWindows/buttonEast]'
   m_NeverAutoSwitchControlSchemes: 0
-  m_DefaultControlScheme: 
+  m_DefaultControlScheme: Gamepad
   m_DefaultActionMap: Player
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}

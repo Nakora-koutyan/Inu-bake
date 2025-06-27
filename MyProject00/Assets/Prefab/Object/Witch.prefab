@@ -103,7 +103,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serif_window: {fileID: 0}
   target: {fileID: 0}
-  _messages: []
+  _default_messages: []
+  _level1_messages: []
+  _level2_messages: []
+  _level3_messages: []
+  _player_input: {fileID: 0}
+  _text_speed: 0.01
+  _apple: {fileID: 0}
+  threshold_count: 0
+  baseline_count: 0
 --- !u!1 &2223054070170015658
 GameObject:
   m_ObjectHideFlags: 0
